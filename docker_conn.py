@@ -1,11 +1,12 @@
 from fabric import Connection
+from invoke import UnexpectedExit
 
 c = Connection(
-    host="106.52.86.77",
+    host="172.16.0.108",
     user="root",
-    port=7681,
+    port=22,
     connect_kwargs={
-        "key_filename": "C:/Users/LYZ/Desktop/LEEDS资料/server/private_key_cloud1_openssh",
+        "password": "tqhpoi123,./"
     },
 )
 
@@ -68,4 +69,25 @@ def write_tag(docker_name, tag_value):
         print("label " + docker_name + " successful")
 
 
+def init_tc(na_name):
+    try:
+        c.run("tc qdisc del dev " + na_name + " root", hide=True)
+    except UnexpectedExit:
+        print("already clean")
 
+
+def tc_shaping(na_name):
+    c.run("tc qdisc add dev " + na_name + " root handle 1: htb", hide=True)
+    c.run("tc class add dev " + na_name + " parent 1:0 classid 1:1 htb rate 4Mbit burst 15k", hide=True)
+    c.run("tc class add dev " + na_name + " parent 1:1 classid 1:10 htb rate 0.4Mbit ceil 0.5Mbit burst 15k", hide=True)
+    c.run("tc class add dev " + na_name + " parent 1:1 classid 1:20 htb rate 1Mbit ceil 3Mbit burst 15k", hide=True)
+    c.run("tc class add dev " + na_name + " parent 1:1 classid 1:30 htb rate 0.1Mbit ceil 2Mbit burst 15k", hide=True)
+    c.run("tc filter add dev " + na_name + " parent 1:0 protocol ip prio 1 handle 1: cgroup", hide=True)
+
+print(list_docker())
+
+create_docker('docker-a')
+write_tag('docker-a', '0x010030')
+
+init_tc('enp2s0')
+tc_shaping('enp2s0')
