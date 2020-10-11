@@ -20,6 +20,7 @@ def create_docker(docker_name):
         print('Use existing docker')
     result = c.run(" docker ps -aqf 'name=" + docker_name + "' --no-trunc", hide=True)
     docker_id = result.stdout.strip()
+    print("docker_name: " + docker_name)
     print("docker_id: " + docker_id)
     return docker_id
 
@@ -58,36 +59,65 @@ def list_docker():
     return docker_list
 
 
-def write_tag(docker_name, tag_value):
+def make_tag(config):
+    tag = []
+    for val in conf:
+        if config.index(val) < 8:
+            tag.append('0x01000' + str(config.index(val) + 2))
+        else:
+            tag.append('0x0100' + str(config.index(val) + 2))
+    return tag
+
+
+def write_tag(docker_id, docker_name, tag_value):
     result = c.run("docker ps -aqf 'name=" + docker_name + "'", hide=True)
     if len(result.stdout.strip()) == 0:
         print("cannot find docker " + docker_name)
     else:
-        result = c.run("docker ps --format '{{.ID}}' --no-trunc", hide=True)
-        c.run("echo " + tag_value + " > /sys/fs/cgroup/net_cls/docker/" + result.stdout.strip() + "/net_cls.classid",
+        c.run("echo " + tag_value + " > /sys/fs/cgroup/net_cls/docker/" + docker_id + "/net_cls.classid",
               hide=True)
         print("label " + docker_name + " successful")
 
 
-def init_tc(na_name):
+def get_net_name():
+    result = c.run("cat /proc/net/dev | awk '{i++; if(i>2){print $1}}' | sed 's/^[\t]*//g' | sed 's/[:]*$//g'",
+                   hide=True)
+    return result.stdout.strip().split('\n')[0]
+
+
+def init_tc(net_name_in):
     try:
-        c.run("tc qdisc del dev " + na_name + " root", hide=True)
+        c.run("tc qdisc del dev " + net_name_in + " root", hide=True)
     except UnexpectedExit:
         print("already clean")
+    c.run("tc qdisc add dev " + net_name_in + " root handle 1: htb", hide=True)
+    c.run("tc class add dev " + net_name_in + " parent 1:0 classid 1:1 htb rate 30Mbit burst 15k", hide=True)
 
 
-def tc_shaping(na_name):
-    c.run("tc qdisc add dev " + na_name + " root handle 1: htb", hide=True)
-    c.run("tc class add dev " + na_name + " parent 1:0 classid 1:1 htb rate 4Mbit burst 15k", hide=True)
-    c.run("tc class add dev " + na_name + " parent 1:1 classid 1:10 htb rate 0.4Mbit ceil 0.5Mbit burst 15k", hide=True)
-    c.run("tc class add dev " + na_name + " parent 1:1 classid 1:20 htb rate 1Mbit ceil 3Mbit burst 15k", hide=True)
-    c.run("tc class add dev " + na_name + " parent 1:1 classid 1:30 htb rate 0.1Mbit ceil 2Mbit burst 15k", hide=True)
-    c.run("tc filter add dev " + na_name + " parent 1:0 protocol ip prio 1 handle 1: cgroup", hide=True)
+def tc_shaping(docker_name, speed_value, class_id, net_name_in):
+    print("tc class add dev " + net_name_in + " parent 1:1 classid 1:" + class_id +
+          " htb rate " + speed_value + "Mbit burst 15k")
+    c.run("tc class add dev " + net_name_in + " parent 1:1 classid 1:" + class_id +
+          " htb rate " + speed_value + "Mbit burst 15k", hide=True)
+    print("shaping " + docker_name + " successful")
 
-print(list_docker())
 
-create_docker('docker-a')
-write_tag('docker-a', '0x010030')
+def tc_filter(net_name_in):
+    c.run("tc filter add dev " + net_name_in + " parent 1:0 protocol ip prio 1 handle 1: cgroup", hide=True)
 
-init_tc('enp2s0')
-tc_shaping('enp2s0')
+
+def main_process(config):
+    net_name = get_net_name()
+    init_tc(net_name)
+    tag = make_tag(conf)
+    for i in range(len(config)):
+        docker = create_docker(config[i][0])
+        write_tag(docker, config[i][0], tag[i])
+        tc_shaping(config[i][0], str(config[i][1]), str(i + 2), net_name)
+        print('-----------------------------------------')
+    tc_filter(net_name)
+
+
+conf = [['docker-a', 0.5], ['docker-b', 1.5], ['docker-c', 5.0]]
+
+main_process(conf)
