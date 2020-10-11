@@ -1,15 +1,6 @@
 from fabric import Connection
 from invoke import UnexpectedExit
 
-c = Connection(
-    host="172.16.0.108",
-    user="root",
-    port=22,
-    connect_kwargs={
-        "password": "tqhpoi123,./"
-    },
-)
-
 
 def create_docker(docker_name):
     result = c.run("docker ps -aqf 'name=" + docker_name + "'", hide=True)
@@ -95,8 +86,6 @@ def init_tc(net_name_in):
 
 
 def tc_shaping(docker_name, speed_value, class_id, net_name_in):
-    print("tc class add dev " + net_name_in + " parent 1:1 classid 1:" + class_id +
-          " htb rate " + speed_value + "Mbit burst 15k")
     c.run("tc class add dev " + net_name_in + " parent 1:1 classid 1:" + class_id +
           " htb rate " + speed_value + "Mbit burst 15k", hide=True)
     print("shaping " + docker_name + " successful")
@@ -116,6 +105,16 @@ def main_process(config):
         tc_shaping(config[i][0], str(config[i][1]), str(i + 2), net_name)
         print('-----------------------------------------')
     tc_filter(net_name)
+
+
+c = Connection(
+    host="106.52.86.77",
+    user="root",
+    port=7681,
+    connect_kwargs={
+        "password": "tPYUE4QRCjMII"
+    },
+)
 
 
 conf = [['docker-a', 0.5], ['docker-b', 1.5], ['docker-c', 5.0]]
