@@ -4,16 +4,11 @@ from invoke import UnexpectedExit
 
 def create_docker(docker_name):
     result = c.run("docker ps -aqf 'name=" + docker_name + "'", hide=True)
-    if len(result.stdout.strip()) == 0:
-        c.run("docker run -itd --name " + docker_name + " --network=host  ubuntu /bin/bash", hide=True)
-        print('Create docker successful')
-    else:
+    if len(result.stdout.strip()) != 0:
         print('Use existing docker')
-    result = c.run(" docker ps -aqf 'name=" + docker_name + "' --no-trunc", hide=True)
-    docker_id = result.stdout.strip()
-    print("docker_name: " + docker_name)
-    print("docker_id: " + docker_id)
-    return docker_id
+    else:
+        c.run("docker run -itd --name " + docker_name + " --network=host  ubuntu /bin/bash", hide=True)
+    return 1
 
 
 def delete_docker(docker_name):
@@ -47,10 +42,18 @@ def stop_docker(docker_name):
 def list_docker():
     docker_list = {}
     result = c.run("docker ps --format '{{.Names}} {{.ID}}'", hide=True)
-    for val in result.stdout.strip().split('\n'):
-        docker_list[val.split(' ')[0]] = val.split(' ')[1]
-        # docker_list.append(val.split(' '))
+    if len(result.stdout.strip()) != 0:
+        for val in result.stdout.strip().split('\n'):
+            docker_list[val.split(' ')[0]] = val.split(' ')[1]
     return docker_list
+
+
+def get_docker_id(docker_names):
+    command = ""
+    for docker_name in docker_names:
+        command += "docker ps -aqf 'name=" + docker_name + "' --no-trunc;"
+    result = c.run(command, hide=True)
+    return result.stdout.strip().split('\n')
 
 
 def make_tag(config):
@@ -64,19 +67,19 @@ def make_tag(config):
 
 
 def write_tag(docker_id, docker_name, tag_value):
-    result = c.run("docker ps -aqf 'name=" + docker_name + "'", hide=True)
-    if len(result.stdout.strip()) == 0:
-        print("cannot find docker " + docker_name)
-    else:
-        c.run("echo " + tag_value + " > /sys/fs/cgroup/net_cls/docker/" + docker_id + "/net_cls.classid",
-              hide=True)
-        print("label " + docker_name + " successful")
+    command = ""
+    for i in range(len(docker_id)):
+        command += "echo " + tag_value[i] + " > /sys/fs/cgroup/net_cls/docker/" + docker_id[i] + "/net_cls.classid;"
+    c.run(command, hide=True)
+    print("label successful")
 
 
 def get_net_name():
     result = c.run("cat /proc/net/dev | awk '{i++; if(i>2){print $1}}' | sed 's/^[\t]*//g' | sed 's/[:]*$//g'",
                    hide=True)
-    return result.stdout.strip().split('\n')[0]
+    for val in result.stdout.split('\n'):
+        if val != 'docker0' and val != 'lo':
+            return val
 
 
 def init_tc(net_name_in):
@@ -84,36 +87,46 @@ def init_tc(net_name_in):
         c.run("tc qdisc del dev " + net_name_in + " root", hide=True)
     except UnexpectedExit:
         print("already clean")
-    c.run("tc qdisc add dev " + net_name_in + " root handle 1: htb", hide=True)
-    c.run("tc class add dev " + net_name_in + " parent 1:0 classid 1:1 htb rate 30Mbit burst 15k", hide=True)
+    c.run("tc qdisc add dev " + net_name_in + " root handle 1: htb; tc class add dev " + net_name_in + " parent 1:0 " +
+          "classid 1:1 htb rate 30Mbit burst 15k", hide=True)
 
 
-def tc_shaping(docker_name, speed_value, class_id, net_name_in):
-    c.run("tc class add dev " + net_name_in + " parent 1:1 classid 1:" + class_id +
-          " htb rate " + speed_value + "Mbit burst 15k", hide=True)
-    print("shaping " + docker_name + " successful")
+def tc_shaping(docker_name, config, net_name):
+    command = ""
+    for i in range(len(docker_name)):
+        command += "tc class add dev " + net_name + " parent 1:1 classid 1:" + str(i + 2) + " htb rate " + \
+                   str(config[docker_name[i]]) + "Mbit burst 15k;"
+    c.run(command, hide=True)
 
 
 def tc_filter(net_name_in):
     c.run("tc filter add dev " + net_name_in + " parent 1:0 protocol ip prio 1 handle 1: cgroup", hide=True)
 
 
+def speed_test(docker_name):
+    c.run("docker exec " + docker_name + " apt update", warn=True, hide=True)
+    c.run("docker exec " + docker_name + " apt-get install speedtest-cli -y", hide=True)
+    result = c.run("docker exec " + docker_name + " speedtest-cli --simple", hide=True)
+    print(result.stdout.strip() + "x")
+    c.run("exit", warn=True, hide=True)
+    return result.stdout.strip().split('\n')[2][8:-7]
+
+
 def main_process(config):
-    docker_name = list(config.keys())
+    docker_names = list(config.keys())
+    docker_ids = get_docker_id(docker_names)
+    tags = make_tag(docker_names)
     net_name = get_net_name()
+
     init_tc(net_name)
-    tag = make_tag(docker_name)
-    for i in range(len(docker_name)):
-        docker = create_docker(docker_name[i])
-        write_tag(docker, docker_name[i], tag[i])
-        tc_shaping(docker_name[i], str(config[docker_name[i]]), str(i + 2), net_name)
-        print('-----------------------------------------')
+    write_tag(docker_ids, docker_names, tags)
+    tc_shaping(docker_names, config, net_name)
     tc_filter(net_name)
     return 1
 
 
 c = Connection(
-    host="172.16.0.108",
+    host="172.169.3.246",
     user="root",
     port=22,
     connect_kwargs={
@@ -130,7 +143,4 @@ c = Connection(
 #     },
 # )
 
-# print(list_docker())
-# conf = {'docker-a': 5, 'docker-b': 1.5, 'docker-c': 5.0}
-#
-# main_process(conf)
+

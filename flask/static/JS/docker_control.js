@@ -24,7 +24,7 @@ function get_docker(){
             console.log(data)
             let docker_name = Object.keys(data)
             for(let i=0;i<docker_name.length;i++){
-                $('#panel').append('<div class="docker_part" id="' + docker_name[i] + '"' + '><h4 class="docker_name">' + docker_name[i] + '</h4>name: ' + docker_name[i] + '<br>ID: ' + data[docker_name[i]] + '<br><br>change speed-limit: <input id="' + docker_name[i] + '-input">Mbits</div>')
+                $('#panel').append('<div class="docker_part" id="' + docker_name[i] + '"' + '><h4 class="docker_name">' + docker_name[i] + '</h4>name: ' + docker_name[i] + '<br>ID: ' + data[docker_name[i]] + '<br><br>change speed-limit: <input id="' + docker_name[i] + '-input">Mbits<br><br><button onclick="test_speed(' + "'" + docker_name[i] + "'" + ')" id="' + docker_name[i] + '-test-speed">upload speed test</button><label id="' + docker_name[i] + '-test-speed-result" for="' + docker_name[i] + '-test-speed" ></div>')
             }
             get_conf()
         },
@@ -116,5 +116,22 @@ function submit_add(docker_name){
         error: function () {},
     });
 }
+
+function test_speed(docker_name){
+    $('#'+docker_name+'-test-speed-result').text(' loading')
+    $.ajax({
+        url: "/test_docker",
+        dataType: "json",
+        type: "POST",
+        data: {
+            'name': docker_name,
+        },
+        success: function (data) {
+            $('#'+docker_name+'-test-speed-result').text(' Upload: '+data+' Mbit/s')
+        },
+        error: function () {},
+    });
+}
+
 
 get_docker()
