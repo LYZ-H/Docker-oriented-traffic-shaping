@@ -1,7 +1,7 @@
 import json
 import os
 from flask import Flask, request
-from docker_conn import main_process, list_docker, create_docker, delete_docker, speed_test
+from docker_conn import *
 
 app = Flask(__name__)
 
@@ -63,20 +63,40 @@ def update_docker():
 @app.route('/read_docker', methods=['GET'])
 def docker_list_get():
     conf = get_conf()
-    del_name = []
+    del_stop_name = []
     docker_list = list_docker()
     docker_list_name = list_docker().keys()
     docker_list_conf = conf.keys()
     for name in docker_list_conf:
         if name not in docker_list_name:
-            del_name.append(name)
-    for name in del_name:
-        del conf[name]
+            del_stop_name.append(name)
+        if docker_list[name][1][0] != 'U':
+            del_stop_name.append(name)
     for name in docker_list_name:
         if name not in docker_list_conf:
             conf[name] = '1'
+    for name in del_stop_name:
+        del conf[name]
     write_conf(conf)
     return docker_list
+
+
+@app.route('/start_docker', methods=['POST'])
+def start_docker_fun():
+    docker_name = request.form['name']
+    if start_docker(docker_name) == 1:
+        return {'status': 1}
+    else:
+        return {'status': 2}
+
+
+@app.route('/stop_docker', methods=['POST'])
+def stop_docker_fun():
+    docker_name = request.form['name']
+    if stop_docker(docker_name) == 1:
+        return {'status': 1}
+    else:
+        return {'status': 2}
 
 
 @app.route('/add_docker', methods=['POST'])

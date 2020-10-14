@@ -22,9 +22,17 @@ function get_docker(){
         type: "GET",
         success: function (data) {
             console.log(data)
+            let panel = $('#panel')
             let docker_name = Object.keys(data)
-            for(let i=0;i<docker_name.length;i++){
-                $('#panel').append('<div class="docker_part" id="' + docker_name[i] + '"' + '><h4 class="docker_name">' + docker_name[i] + '</h4>name: ' + docker_name[i] + '<br>ID: ' + data[docker_name[i]] + '<br><br>change speed-limit: <input id="' + docker_name[i] + '-input">Mbits<br><br><button onclick="test_speed(' + "'" + docker_name[i] + "'" + ')" id="' + docker_name[i] + '-test-speed">upload speed test</button><label id="' + docker_name[i] + '-test-speed-result" for="' + docker_name[i] + '-test-speed" ></div>')
+            let html_panel;
+            for (let i = 0; i < docker_name.length; i++) {
+                html_panel = '<div class="docker_part" id="' + docker_name[i] + '"' + '><h4 class="docker_name">' + docker_name[i] + '</h4>name: ' + docker_name[i] + '<br>ID: ' + data[docker_name[i]][0] + '<br>Status: ' + data[docker_name[i]][1]
+                if (data[docker_name[i]][1][0] === 'U') {
+                    html_panel += '<br><button id="' + docker_name[i] + '-stop" onclick="stop_docker(' + "'" + docker_name[i] + "'" + ')">stop</button><label for="' + docker_name[i] + '-stop" id=' + docker_name[i] + '_start_stop_message></label><br><br><button onclick="test_speed(' + "'" + docker_name[i] + "'" + ')" id="' + docker_name[i] + '-test-speed">upload speed test</button><label id="' + docker_name[i] + '-test-speed-result" for="' + docker_name[i] + '-test-speed" ></label><br>change speed-limit: <input id="' + docker_name[i] + '-input">Mbits<br></div>'
+                }else {
+                    html_panel += '<br><button id="' + docker_name[i] + '-start" onclick="start_docker(' + "'" + docker_name[i] + "'" + ')">start</button><label for="' + docker_name[i] + '-stop" id=' + docker_name[i] + '_start_stop_message></label><br></div>'
+                }
+                panel.append(html_panel)
             }
             get_conf()
         },
@@ -62,7 +70,7 @@ function update_speed_limit(){
 }
 
 function delete_docker(docker_name){
-    $("#announce").text('loading')
+    $("#announce").text(' loading')
     $.ajax({
         url: "/delete_docker",
         dataType: "json",
@@ -76,7 +84,7 @@ function delete_docker(docker_name){
                 alert('delete ' + docker_name + ' successful')
                 setTimeout(function() {
                             location.reload();
-                        }, 2000);
+                        }, 1000);
             }else {
                 $("#announce").text('err, please try again')
                 alert('err, please try again')
@@ -93,7 +101,7 @@ function add_docker(){
 }
 
 function submit_add(docker_name){
-    $("#announce").text('loading')
+    $("#announce").text(' loading')
     $.ajax({
         url: "/add_docker",
         dataType: "json",
@@ -107,7 +115,7 @@ function submit_add(docker_name){
                 alert('add ' + docker_name + ' successful')
                 setTimeout(function() {
                             location.reload();
-                        }, 2000);
+                        }, 1000);
             }else {
                 $("#announce").text('err, please try again')
                 alert('err, please try again')
@@ -128,6 +136,53 @@ function test_speed(docker_name){
         },
         success: function (data) {
             $('#'+docker_name+'-test-speed-result').text(' Upload: '+data+' Mbit/s')
+        },
+        error: function () {},
+    });
+}
+
+function start_docker(docker_name){
+    $('#' + docker_name + '_start_stop_message').text('loading')
+    $.ajax({
+        url: "/start_docker",
+        dataType: "json",
+        type: "POST",
+        data: {
+            'name': docker_name,
+        },
+        success: function (data) {
+            if(data.status === 1){
+                alert("start " + docker_name + " successful")
+                setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+            }else {
+                alert('err, please try again')
+            }
+        },
+        error: function () {},
+    });
+}
+
+
+function stop_docker(docker_name){
+    $('#' + docker_name + '_start_stop_message').text('loading')
+    $.ajax({
+        url: "/stop_docker",
+        dataType: "json",
+        type: "POST",
+        data: {
+            'name': docker_name,
+        },
+        success: function (data) {
+            if(data.status === 1){
+                alert("stop " + docker_name + " successful")
+                setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+            }else {
+                alert('err, please try again')
+            }
         },
         error: function () {},
     });

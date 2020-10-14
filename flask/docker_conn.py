@@ -27,24 +27,29 @@ def start_docker(docker_name):
     result = c.run("docker ps -aqf 'name=" + docker_name + "'", hide=True)
     if len(result.stdout.strip()) == 0:
         print("cannot find docker" + docker_name)
+        return 2
     else:
         c.run("docker start " + docker_name, hide=True)
+        return 1
 
 
 def stop_docker(docker_name):
     result = c.run("docker ps -aqf 'name=" + docker_name + "'", hide=True)
     if len(result.stdout.strip()) == 0:
         print("cannot find docker " + docker_name)
+        return 2
     else:
         c.run("docker stop " + docker_name, hide=True)
+        return 1
 
 
 def list_docker():
     docker_list = {}
-    result = c.run("docker ps --format '{{.Names}} {{.ID}}'", hide=True)
+    result = c.run("docker ps -a --format '{{.Names}}|{{.ID}}|{{.Status}}'", hide=True)
     if len(result.stdout.strip()) != 0:
         for val in result.stdout.strip().split('\n'):
-            docker_list[val.split(' ')[0]] = val.split(' ')[1]
+            value_list = val.split('|')
+            docker_list[value_list[0]] = [value_list[1], value_list[2]]
     return docker_list
 
 
@@ -125,22 +130,38 @@ def main_process(config):
     return 1
 
 
+# c = Connection(
+#     host="172.169.3.246",
+#     user="root",
+#     port=22,
+#     connect_kwargs={
+#         "password": "tqhpoi123,./"
+#     },
+# )
+
 c = Connection(
-    host="172.169.3.246",
+    host="106.52.86.77",
     user="root",
-    port=22,
+    port=7681,
     connect_kwargs={
-        "password": "tqhpoi123,./"
+        "password": "tPYUE4QRCjMII"
     },
 )
 
-# c = Connection(
-#     host="106.52.86.77",
-#     user="root",
-#     port=7681,
-#     connect_kwargs={
-#         "password": "tPYUE4QRCjMII"
-#     },
-# )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
