@@ -14,7 +14,8 @@ def get_conf():
     for line in config:
         if len(line) > 1:
             line_list = line.strip('\n').split(':')
-            conf[line_list[0]] = line_list[1]
+            if len(line_list) == 2:
+                conf[line_list[0]] = line_list[1]
     f.close()
     return conf
 
@@ -70,8 +71,9 @@ def docker_list_get():
     for name in docker_list_conf:
         if name not in docker_list_name:
             del_stop_name.append(name)
-        if docker_list[name][1][0] != 'U':
-            del_stop_name.append(name)
+        if name in docker_list_name:
+            if docker_list[name][1][0] != 'U':
+                del_stop_name.append(name)
     for name in docker_list_name:
         if name not in docker_list_conf:
             conf[name] = '1'

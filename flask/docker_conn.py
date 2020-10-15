@@ -76,7 +76,7 @@ def write_tag(docker_id, docker_name, tag_value):
     for i in range(len(docker_id)):
         command += "echo " + tag_value[i] + " > /sys/fs/cgroup/net_cls/docker/" + docker_id[i] + "/net_cls.classid;"
     c.run(command, hide=True)
-    print("label successful")
+    print("label " + str(docker_name) + " successful")
 
 
 def get_net_name():
@@ -111,57 +111,40 @@ def tc_filter(net_name_in):
 def speed_test(docker_name):
     c.run("docker exec " + docker_name + " apt update", warn=True, hide=True)
     c.run("docker exec " + docker_name + " apt-get install speedtest-cli -y", hide=True)
-    result = c.run("docker exec " + docker_name + " speedtest-cli --simple", hide=True)
+    result = c.run("docker exec " + docker_name + " speedtest-cli --simple --no-download", hide=True)
     print(result.stdout.strip() + "x")
     c.run("exit", warn=True, hide=True)
     return result.stdout.strip().split('\n')[2][8:-7]
 
 
 def main_process(config):
-    docker_names = list(config.keys())
-    docker_ids = get_docker_id(docker_names)
-    tags = make_tag(docker_names)
     net_name = get_net_name()
-
     init_tc(net_name)
-    write_tag(docker_ids, docker_names, tags)
-    tc_shaping(docker_names, config, net_name)
+    if config != {}:
+        docker_names = list(config.keys())
+        docker_ids = get_docker_id(docker_names)
+        tags = make_tag(docker_names)
+
+        write_tag(docker_ids, docker_names, tags)
+        tc_shaping(docker_names, config, net_name)
     tc_filter(net_name)
     return 1
 
 
-# c = Connection(
-#     host="172.169.3.246",
-#     user="root",
-#     port=22,
-#     connect_kwargs={
-#         "password": "tqhpoi123,./"
-#     },
-# )
-
 c = Connection(
-    host="106.52.86.77",
+    host="192.168.1.100",
     user="root",
-    port=7681,
+    port=22,
     connect_kwargs={
-        "password": "tPYUE4QRCjMII"
+        "password": "lingyunzhi123"
     },
 )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# c = Connection(
+#     host="106.52.86.77",
+#     user="root",
+#     port=7681,
+#     connect_kwargs={
+#         "password": "tPYUE4QRCjMII"
+#     },
+# )
