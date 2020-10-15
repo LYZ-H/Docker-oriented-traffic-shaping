@@ -1,3 +1,19 @@
+function get_server_ip(){
+    $.ajax({
+        url: "/server_ip",
+        dataType: "json",
+        type: "GET",
+        success: function (data) {
+            console.log(data)
+            $('#server_ip').text(data.ip)
+            get_docker()
+        },
+        error: function () {
+            get_server_ip()
+        },
+    });
+}
+
 function get_conf(){
     $.ajax({
         url: "/read_conf",
@@ -11,7 +27,9 @@ function get_conf(){
                 $('#' + docker_name[i] + '-input').val(data[docker_name[i]])
             }
         },
-        error: function () {},
+        error: function () {
+            get_conf()
+        },
     });
 }
 
@@ -33,10 +51,15 @@ function get_docker(){
                     html_panel += '<br><button id="' + docker_name[i] + '-start" onclick="start_docker(' + "'" + docker_name[i] + "'" + ')">start</button><label for="' + docker_name[i] + '-stop" id=' + docker_name[i] + '_start_stop_message></label><br></div>'
                 }
                 panel.append(html_panel)
+                if (data[docker_name[i]][1][0] === 'U'){
+                    test_speed(docker_name[i])
+                }
             }
             get_conf()
         },
-        error: function () {},
+        error: function () {
+            get_docker()
+        },
     });
 }
 
@@ -65,7 +88,9 @@ function update_speed_limit(){
                 alert('err, please try again')
             }
         },
-        error: function () {},
+        error: function () {
+            update_speed_limit()
+        },
     });
 }
 
@@ -90,7 +115,9 @@ function delete_docker(docker_name){
                 alert('err, please try again')
             }
         },
-        error: function () {},
+        error: function () {
+            delete_docker(docker_name)
+        },
     });
 }
 
@@ -121,7 +148,9 @@ function submit_add(docker_name){
                 alert('err, please try again')
             }
         },
-        error: function () {},
+        error: function () {
+            submit_add(docker_name)
+        },
     });
 }
 
@@ -137,7 +166,9 @@ function test_speed(docker_name){
         success: function (data) {
             $('#'+docker_name+'-test-speed-result').text(' Upload: '+data+' Mbit/s')
         },
-        error: function () {},
+        error: function () {
+            test_speed(docker_name)
+        },
     });
 }
 
@@ -160,7 +191,9 @@ function start_docker(docker_name){
                 alert('err, please try again')
             }
         },
-        error: function () {},
+        error: function () {
+            start_docker(docker_name)
+        },
     });
 }
 
@@ -184,9 +217,11 @@ function stop_docker(docker_name){
                 alert('err, please try again')
             }
         },
-        error: function () {},
+        error: function () {
+            stop_docker(docker_name)
+        },
     });
 }
 
+get_server_ip()
 
-get_docker()
