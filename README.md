@@ -31,42 +31,26 @@ through tc's traffic shaping of cgroup.
 | Flask  | 1.1.2 |
 
 **File Directory**
-
-│ docker_conn.py
-
-│ flask_docker.py
-
+```
+│  docker_conn.py
+│  flask_docker.py
 │
-
 ├─config
-
-│ apt_source
-
-│ docker_config
-
-│ server_config
-
+│      apt_source
+│      docker_config
+│      server_config
 │
-
 └─static
-
-├─CSS
-
-│ docker_control.css
-
-│
-
-├─HTML
-
-│ docker_page.html
-
-│
-
-└─JS
-
-docker_control.js
-
-jquery.js
+    ├─CSS
+    │      docker_control.css
+    │
+    ├─HTML
+    │      docker_page.html
+    │
+    └─JS
+            docker_control.js
+            jquery.js
+```
 
 docker_conn.py: Encapsulated docker control function
 
@@ -87,6 +71,7 @@ Third line: server ssh port
 Fourth line: server ssh password
 
 **Example:**
+```
 
 \----server.config----
 
@@ -99,6 +84,7 @@ root
 12345678
 
 \----------end----------
+```
 
 **Run this system**
 
