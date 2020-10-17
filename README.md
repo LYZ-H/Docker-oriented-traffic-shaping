@@ -1,16 +1,17 @@
 # Docker-oriented-traffic-shaping
 
-1.  **Overview**
+1.**Overview**
 
-2.  **Environment**
+2.**Environment**
 
-3.  **File Directory**
+3.**File Directory**
 
-4.  **Server parameter configuration**
+4.**Server parameter configuration**
 
-5.  **Run this system**
+5.**Run this system**
 
-6.  **Attention**
+6.**Attention**
+ <br> <br>
 
 **Overview**
 
@@ -25,8 +26,9 @@ through tc's traffic shaping of cgroup.
 
 **Environment**
 
-| Python | 3.7.7 |
+|name|version|
 |--------|-------|
+| Python | 3.7.7 |
 | Fabric | 2.5.0 |
 | Flask  | 1.1.2 |
 
@@ -69,8 +71,8 @@ Second line: server root username
 Third line: server ssh port
 
 Fourth line: server ssh password
-
-**Example:**
+ <br> <br>
+Example:
 ```
 
 \----server.config----
@@ -92,9 +94,9 @@ to run this project, run flask/flask_docker.py
 
 **Attention**
 
-1.  Since docker's cgroup is mounted in the Linux system folder, ssh requires
+1.Since docker's cgroup is mounted in the Linux system folder, ssh requires
     **root** privileges to enter.
 
-2.  At the beginning, the default bandwidth of each docker is 1Mbit/s, and the
+2.The default bandwidth of each docker is 1Mbit/s, and the
     bandwidth will be automatically tested every time a new bandwidth limit is
     submitted.
