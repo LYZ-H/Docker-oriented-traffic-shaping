@@ -19,9 +19,9 @@ technology that virtualizes hardware, docker runs under a single Linux through
 Linux resource allocation mechanisms such as cgroup, which makes the resource
 usage much lower than virtual machines.
 
-Since the allocation of docker's underlying resources (CPU, memory, net) is
-based on cgroup, the dynamic traffic shaping of docker can be achieved through
-tc's traffic shaping of cgroup.
+Since the allocation of docker's underlying resources (CPU, memory, net, etc.)
+is based on cgroup, the dynamic traffic shaping of docker can be achieved
+through tc's traffic shaping of cgroup.
 
 **Environment**
 
