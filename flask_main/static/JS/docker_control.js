@@ -23,7 +23,7 @@ function get_conf(){
             console.log(data)
             let docker_name = Object.keys(data)
             for(let i=0;i<docker_name.length;i++){
-                $('#' + docker_name[i]).append('<p id="' + docker_name[i] + '-speed">speed-limit: ' + data[docker_name[i]] + 'Mbits</p><button onclick="delete_docker(' + "'" + docker_name[i] + "'" +')" id="' + docker_name[i] + '-delete">DELETE</button>')
+                $('#' + docker_name[i]).append('<p id="' + docker_name[i] + '-speed">speed-limit: ' + data[docker_name[i]] + 'Mbits</p><button onclick="delete_docker(' + "'" + docker_name[i] + "'" +')" id="' + docker_name[i] + '-delete" class="btn btn-danger" > <i class="fas fa-trash-alt"></i> DELETE </button>')
                 $('#' + docker_name[i] + '-input').val(data[docker_name[i]])
             }
         },
@@ -46,9 +46,8 @@ function get_docker(){
             for (let i = 0; i < docker_name.length; i++) {
                 html_panel = '<div class="docker_part" id="' + docker_name[i] + '"' + '><h4 class="docker_name">' + docker_name[i] + '</h4>name: ' + docker_name[i] + '<br>ID: ' + data[docker_name[i]][0] + '<br>Status: ' + data[docker_name[i]][1]
                 if (data[docker_name[i]][1][0] === 'U') {
-                    html_panel += '<br><button id="' + docker_name[i] + '-stop" onclick="stop_docker(' + "'" + docker_name[i] + "'" + ')">stop</button><label for="' + docker_name[i] + '-stop" id=' + docker_name[i] + '_start_stop_message></label><br><br><button onclick="test_speed(' + "'" + docker_name[i] + "'" + ')" id="' + docker_name[i] + '-test-speed">upload speed test</button><label id="' + docker_name[i] + '-test-speed-result" for="' + docker_name[i] + '-test-speed" ></label><br>change speed-limit: <input id="' + docker_name[i] + '-input">Mbits<br></div>'
-                }else {
-                    html_panel += '<br><button id="' + docker_name[i] + '-start" onclick="start_docker(' + "'" + docker_name[i] + "'" + ')">start</button><label for="' + docker_name[i] + '-stop" id=' + docker_name[i] + '_start_stop_message></label><br></div>'
+                    html_panel += '<br><button id="' + docker_name[i] + '-stop" onclick="stop_docker(' + "'" + docker_name[i] + "'" + ')" class="btn btn-secondary" ><i class="fas fa-pause"></i> STOP </button><label for="' + docker_name[i] + '-stop" id=' + docker_name[i] + '_start_stop_message></label><br><br><label id="' + docker_name[i] + '-test-speed-result" for="' + docker_name[i] + '-test-speed" ></label> <br> <button onclick="test_speed(' + "'" + docker_name[i] + "'" + ')" id="' + docker_name[i] + '-test-speed" class="btn btn-primary"  > <i class="fas fa-vial"></i> Do speed test </button> <br>change speed-limit: <input id="' + docker_name[i] + '-input">Mbits<br></div>'}else {
+                    html_panel += '<br><button id="' + docker_name[i] + '-start" onclick="start_docker(' + "'" + docker_name[i] + "'" + ')" class="btn btn-success" ><i class="fas fa-play"></i> START </button><label for="' + docker_name[i] + '-start" id=' + docker_name[i] + '_start_stop_message></label><br></div>'
                 }
                 panel.append(html_panel)
                 if (data[docker_name[i]][1][0] === 'U'){

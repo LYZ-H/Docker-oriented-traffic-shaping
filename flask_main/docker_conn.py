@@ -3,6 +3,9 @@ from fabric import Connection
 from invoke import UnexpectedExit
 
 
+def init_iperf(c):
+    c.run("nohup iperf -s &", warn=True, hide=True)
+
 def get_connection():
     path = os.getcwd()
     f = open(os.path.join(path, 'config/server_config'), 'r')

@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request
-from docker_conn import *
+from flask_main.docker_conn import *
 
 app = Flask(__name__)
 
@@ -9,6 +9,7 @@ c = get_connection()
 
 @app.route('/', methods=['GET'])
 def return_homepage():
+    init_iperf(c)
     return app.send_static_file('HTML/docker_page.html')
 
 
