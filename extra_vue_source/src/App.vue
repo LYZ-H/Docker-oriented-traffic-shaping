@@ -53,7 +53,8 @@
         </v-card>
       </v-dialog>
 
-      <v-btn depressed class="success"><v-icon left>mdi-refresh</v-icon>Refresh</v-btn>
+      <v-btn depressed class="success" @click="refresh()">
+      <v-icon left>mdi-refresh</v-icon>Refresh</v-btn>
     </v-app-bar>
 
     <v-main>
@@ -137,8 +138,11 @@ export default {
     updateCurrentTime() {
       this.current_time = moment().format("HH:mm:ss");
     },
-    getRandomArbitrary(min, max) {
-      return Math.random() * (max - min) + min;
+
+    async refresh(){
+      this.check_dockers()
+          .catch(error=> {this.trigger_snackbar('connection error','e'); throw error });
+      this.trigger_snackbar('refresh success','i');
     },
 
     async docker_speed_change(docker) {
@@ -194,7 +198,6 @@ export default {
       bodyFormData.append('name', this.edit_docker.name);
       await axios.post(this.temp_addr+"/add_docker",bodyFormData,{  headers: { "Content-Type": "multipart/form-data" },})
           .catch(error => {this.dialog =false;this.trigger_snackbar(error,'e'); throw error})
-      this.dockers = []
       await this.check_dockers()
       this.dialog_onload =false
       this.dialog = false
@@ -208,7 +211,6 @@ export default {
       bodyFormData.append('name', the_name);
       await axios.post(this.temp_addr+"/delete_docker",bodyFormData,{  headers: { "Content-Type": "multipart/form-data" },})
           .catch(error => {this.dialog =false; this.trigger_snackbar(error,'e'); throw error})
-      this.dockers = []
       await this.check_dockers()
       this.dialog_onload =false
       this.dialog = false
@@ -223,6 +225,7 @@ export default {
     },
 
     async check_dockers(){
+      this.dockers = []
       await axios.get(this.temp_addr + '/read_docker')
           .then(response => {
             for (let key in response.data) {
