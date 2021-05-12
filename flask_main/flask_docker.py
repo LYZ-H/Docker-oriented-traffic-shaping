@@ -44,9 +44,6 @@ def docker_list_get():
     for name in docker_list_conf:
         if name not in docker_list_name:
             del_name.append(name)
-        # if name in docker_list_name:
-        #     if docker_list[name][1][0] != 'U':
-        #         del_stop_name.append(name)
     for name in docker_list_name:
         if name not in docker_list_conf:
             conf[name] = '1'
