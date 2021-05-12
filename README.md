@@ -100,3 +100,14 @@ to run this project, run flask/flask_docker.py
 2.The default bandwidth of each docker is 1Mbit/s, and the
     bandwidth will be automatically tested every time a new bandwidth limit is
     submitted.
+
+**System screenshot**
+
+1.Homepage
+![avatar](doc/readme_img/screenshot.png)
+
+2.Add docker
+![avatar](doc/readme_img/add_docker.png)
+
+2.Update speed
+![avatar](doc/readme_img/update_speed.png)
