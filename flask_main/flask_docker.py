@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request
-from flask_main.docker_conn import *
+from docker_conn import *
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -9,7 +9,7 @@ c = get_connection()
 
 @app.route('/', methods=['GET'])
 def return_homepage():
-    return app.send_static_file('HTML/docker_page.html')
+    return app.send_static_file('index.html')
 
 
 @app.route('/server_ip', methods=['GET'])
