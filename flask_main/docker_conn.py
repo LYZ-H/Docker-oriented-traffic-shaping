@@ -2,10 +2,6 @@ import os
 from fabric import Connection
 from invoke import UnexpectedExit
 
-
-def init_iperf(c):
-    c.run("nohup iperf -s &", warn=True, hide=True)
-
 def get_connection():
     path = os.getcwd()
     f = open(os.path.join(path, 'config/server_config'), 'r')
@@ -182,9 +178,9 @@ def get_local_ip(c):
 
 def speed_test(c, docker_name):
     result = c.run("docker exec " + docker_name + " iperf -c " + get_local_ip(c) +
-                   " |awk '/[0-9]]/{sub(/.*]/,\"\");print $1\" \"$5}'", hide=True)
-    print(docker_name + " speed:" + result.stdout.split('\n')[1].split(' ')[1])
-    return result.stdout.split('\n')[1].split(' ')[1]
+                   " |awk '/[0-9]]/{sub(/.*]/,\"\");print $5\" \"$6}'", hide=True)
+    print(docker_name + " speed:" + result.stdout.split('\n')[1])
+    return result.stdout.split('\n')[1]
 
 
 def main_process(c, config):

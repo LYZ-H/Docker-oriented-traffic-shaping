@@ -1,15 +1,14 @@
 import json
 from flask import Flask, request
 from flask_main.docker_conn import *
+from flask_cors import CORS
 
 app = Flask(__name__)
-
+CORS(app)
 c = get_connection()
-
 
 @app.route('/', methods=['GET'])
 def return_homepage():
-    init_iperf(c)
     return app.send_static_file('HTML/docker_page.html')
 
 
@@ -107,4 +106,4 @@ def test_docker_speed():
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080)
+    app.run(host='0.0.0.0', port=8080)

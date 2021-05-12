@@ -8,7 +8,8 @@ function get_server_ip(){
             $('#server_ip').text(data.ip)
             get_docker()
         },
-        error: function () {
+        error: function (err) {
+            console.log(err)
             get_server_ip()
         },
     });
@@ -163,10 +164,11 @@ function test_speed(docker_name){
             'name': docker_name,
         },
         success: function (data) {
-            $('#'+docker_name+'-test-speed-result').text(' Upload: '+data+' Mbit/s')
+            $('#'+docker_name+'-test-speed-result').text(' Upload: '+data)
         },
-        error: function () {
-            test_speed(docker_name)
+        error: function (err) {
+            console.log(err)
+            $('#'+docker_name+'-test-speed-result').text(' Upload: '+err.responseText)
         },
     });
 }
