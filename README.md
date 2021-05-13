@@ -43,15 +43,17 @@ through tc's traffic shaping of cgroup.
 │      server_config
 │
 └─static
+	│  favicon.ico
+	│  index.html
+	│
     ├─CSS
-    │      docker_control.css
-    │
-    ├─HTML
-    │      docker_page.html
+    │      chunk-vendors.8dd5ae3.css
     │
     └─JS
-            docker_control.js
-            jquery.js
+            app.71b3fef1.js
+            app.71b3fef1.js.map
+            chunk-vendors.9006551a.js
+            chunk-vendors.9006551a.js.map
 ```
 
 docker_conn.py: Encapsulated docker control function
