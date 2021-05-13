@@ -43,9 +43,9 @@ through tc's traffic shaping of cgroup.
 │      server_config
 │
 └─static
-	│  favicon.ico
-	│  index.html
-	│
+    │  favicon.ico
+    │  index.html
+    │
     ├─CSS
     │      chunk-vendors.8dd5ae3.css
     │
